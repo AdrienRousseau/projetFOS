@@ -8,10 +8,9 @@ import scala.util.parsing.input._
  *  the TAPL book.
  */
 object Arithmetic extends StandardTokenParsers {
-  lexical.reserved ++= List("true", "false", "0", "if", "then", "else", "succ", "pred", "iszero","2")
+  lexical.reserved ++= List("true", "false", "0", "if", "then", "else", "succ", "pred", "iszero")
 
   import lexical.NumericLit
-  import lexical.StringLit
 
   /** term ::= 'true'
              | 'false'
@@ -24,7 +23,7 @@ object Arithmetic extends StandardTokenParsers {
   def term: Parser[Term] = ("true" ^^^ True 
       | "false" ^^^ False
       | "0" ^^^ Zero 
-      |  "if" ~> term ~ "then" ~ term ~ "else" ~ term ^^ { case t1 ~ "then" ~ t2 ~ "else" ~ t3 => If(t1,t2,t3)}
+      | "if" ~> term ~ "then" ~ term ~ "else" ~ term ^^ { case t1 ~ "then" ~ t2 ~ "else" ~ t3 => { If(t1,t2,t3)}}
       | "succ" ~> term ^^ ((t: Term) => Succ(t)) 
       | "pred" ~> term ^^ ((t: Term) => Pred(t))
       | "iszero" ~> term ^^((t: Term) => IsZero(t))
@@ -38,6 +37,7 @@ object Arithmetic extends StandardTokenParsers {
     else {
       Succ(ConvertInt(num -1))
     } ;
+    
   
   
   case class NoReductionPossible(t: Term) extends Exception(t.toString)
@@ -59,8 +59,15 @@ object Arithmetic extends StandardTokenParsers {
    *  If reduction is not possible NoReductionPossible exception
    *  with corresponding irreducible term should be thrown.
    */
-  def reduce(t: Term): Term =
-    ???
+  def reduce(t: Term): Term = t match {
+    case If(True,t2,t3) => t2
+    case If(False,t2,t3) => t3
+    case IsZero(Zero) => True
+    case IsZero(Succ(va)) => False
+    case Pred(Zero) => Zero
+    case True => True
+    case _ => throw NoReductionPossible(t) }
+  ;
 
   case class TermIsStuck(t: Term) extends Exception(t.toString)
 
@@ -68,11 +75,17 @@ object Arithmetic extends StandardTokenParsers {
    *  If evaluation is not possible TermIsStuck exception with
    *  corresponding inner irreducible term should be thrown.
    */
-  def eval(t: Term): Term =
-    ???
+  def eval(t: Term): Term = 
+    t match {
+    case If(True, t2, t3) => eval(t2)
+    case If(False, t2, t3) => eval(t3)
+    case _ => t
+  }
 
   def main(args: Array[String]): Unit = {
-    val tokens = new lexical.Scanner(StreamReader(new java.io.InputStreamReader(System.in)))
+    //val tokens = new lexical.Scanner(StreamReader(new java.io.InputStreamReader(System.in)))
+    var myData = "if iszero pred pred 2 then if iszero 0 then true else false else false";
+    val tokens = new lexical.Scanner(myData)
     phrase(term)(tokens) match {
       case Success(trees, _) =>
         for (t <- path(trees))
