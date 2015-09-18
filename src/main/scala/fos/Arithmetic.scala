@@ -11,6 +11,7 @@ object Arithmetic extends StandardTokenParsers {
   lexical.reserved ++= List("true", "false", "0", "if", "then", "else", "succ", "pred", "iszero","2")
 
   import lexical.NumericLit
+  import lexical.StringLit
 
   /** term ::= 'true'
              | 'false'
@@ -20,10 +21,28 @@ object Arithmetic extends StandardTokenParsers {
              | 'pred' term
              | 'iszero' term
    */
-  def term: Parser[Term] = "true" ^^^ (True) | "false" ^^^ (False) | "0" ^^^ (Zero) |  "if" ~> term ~ "then" ~ term ~ "else" ~ term ^^( (x: Term ~ String ~ Term ~ String ~ Term) => x match {
-    case t1 ~ "then" ~ t2 ~ "else" ~ t3 => If(t1,t2,t3)
-    case _ => False}) | "succ" ~> term ^^ ((t: Term) => Succ(t)) | "pred" ~> term ^^ ((t: Term) => Pred(t)) ;
-
+  def term: Parser[Term] = ("true" ^^^ True 
+      | "false" ^^^ False 
+      | "0" ^^^ Zero 
+      |  "if" ~> term ~ "then" ~ term ~ "else" ~ term ^^ { case t1 ~ "then" ~ t2 ~ "else" ~ t3 => If(t1,t2,t3)}
+      | "succ" ~> term ^^ ((t: Term) => Succ(t)) 
+      | "pred" ~> term ^^ ((t: Term) => Pred(t))
+      | "iszero" ~> term ^^((t: Term) => IsZero(t))
+      | numericLit ^^ ( num => ConvertInt(num.toString().toInt)) );
+    
+    // numericLit ^^ ((num: NumericLit) => ConvertInt(num.toString().toInt())))
+    
+  def ConvertInt(num: Int) : Term =
+    if (num == 0) {
+      Zero
+    }
+    else {
+      Succ(ConvertInt(num -1))
+    } ;
+  
+  
+  
+  
   case class NoReductionPossible(t: Term) extends Exception(t.toString)
 
   /** Return a list of at most n terms, each being one step of reduction. */
