@@ -27,11 +27,11 @@ object Arithmetic extends StandardTokenParsers {
       | "succ" ~> term ^^ ((t: Term) => Succ(t)) 
       | "pred" ~> term ^^ ((t: Term) => Pred(t))
       | "iszero" ~> term ^^((t: Term) => IsZero(t))
-      | numericLit ^^ ( num => ConvertInt(num.toString().toInt)) );
-
-    
-  def ConvertInt(num: Int) : Term =
-    num==0 ? Zero | Succ(ConvertInt(num -1))
+      | numericLit ^^ (num => ConvertInt(num.toString().toInt)));
+  
+  def ConvertInt(num: Int) : Term = {
+    if(num==0) Zero else Succ(ConvertInt(num -1));
+  }
   
   case class NoReductionPossible(t: Term) extends Exception(t.toString)
 
