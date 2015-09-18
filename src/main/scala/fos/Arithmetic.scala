@@ -76,9 +76,10 @@ object Arithmetic extends StandardTokenParsers {
   }
 
   def main(args: Array[String]): Unit = {
-    //val tokens = new lexical.Scanner(StreamReader(new java.io.InputStreamReader(System.in)))
-    var myData = "if iszero pred pred 2 then if iszero 0 then true else false else false";
-    val tokens = new lexical.Scanner(myData)
+    val stdin = new java.io.BufferedReader(new java.io.InputStreamReader(System.in))
+    val tokens = new lexical.Scanner(stdin.readLine())
+    //var myData = "if iszero pred pred 2 then if iszero 0 then true else false else false";
+    //val tokens = new lexical.Scanner(myData)
     phrase(term)(tokens) match {
       case Success(trees, _) =>
         for (t <- path(trees))
