@@ -22,15 +22,14 @@ object Arithmetic extends StandardTokenParsers {
              | 'iszero' term
    */
   def term: Parser[Term] = ("true" ^^^ True 
-      | "false" ^^^ False 
+      | "false" ^^^ False
       | "0" ^^^ Zero 
       |  "if" ~> term ~ "then" ~ term ~ "else" ~ term ^^ { case t1 ~ "then" ~ t2 ~ "else" ~ t3 => If(t1,t2,t3)}
       | "succ" ~> term ^^ ((t: Term) => Succ(t)) 
       | "pred" ~> term ^^ ((t: Term) => Pred(t))
       | "iszero" ~> term ^^((t: Term) => IsZero(t))
       | numericLit ^^ ( num => ConvertInt(num.toString().toInt)) );
-    
-    // numericLit ^^ ((num: NumericLit) => ConvertInt(num.toString().toInt())))
+
     
   def ConvertInt(num: Int) : Term =
     if (num == 0) {
@@ -39,8 +38,6 @@ object Arithmetic extends StandardTokenParsers {
     else {
       Succ(ConvertInt(num -1))
     } ;
-  
-  
   
   
   case class NoReductionPossible(t: Term) extends Exception(t.toString)
