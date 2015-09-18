@@ -31,14 +31,7 @@ object Arithmetic extends StandardTokenParsers {
 
     
   def ConvertInt(num: Int) : Term =
-    if (num == 0) {
-      Zero
-    }
-    else {
-      Succ(ConvertInt(num -1))
-    } ;
-    
-  
+    num==0 ? Zero | Succ(ConvertInt(num -1))
   
   case class NoReductionPossible(t: Term) extends Exception(t.toString)
 
